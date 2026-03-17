@@ -33,45 +33,56 @@ export async function generateMetadata({
   params,
 }: EventDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: eventRaw } = await (supabase.from("events") as any)
-    .select("title, description, image_url")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .single();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: eventRaw } = await (supabase.from("events") as any)
+      .select("title, description, image_url")
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .single();
 
-  const event = eventRaw as { title: string; description: string | null; image_url: string | null } | null;
+    const event = eventRaw as { title: string; description: string | null; image_url: string | null } | null;
 
-  if (!event) return { title: "Evento non trovato — Milan Events" };
+    if (!event) return { title: "Evento non trovato — Milan Events" };
 
-  return {
-    title: `${event.title} — Milan Events`,
-    description: event.description ?? undefined,
-    openGraph: {
-      title: event.title,
+    return {
+      title: `${event.title} — Milan Events`,
       description: event.description ?? undefined,
-      images: event.image_url ? [{ url: event.image_url }] : [],
-    },
-  };
+      openGraph: {
+        title: event.title,
+        description: event.description ?? undefined,
+        images: event.image_url ? [{ url: event.image_url }] : [],
+      },
+    };
+  } catch {
+    return { title: "Evento non trovato — Milan Events" };
+  }
 }
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: event, error } = await (supabase.from("events") as any)
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .single();
+  let typedEvent: Event;
+  try {
+    const supabase = await createClient();
 
-  if (error || !event) notFound();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: event, error } = await (supabase.from("events") as any)
+      .select("*")
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .single();
 
-  const typedEvent = event as Event;
-  const past = isPastEvent(typedEvent);
+    if (error || !event) notFound();
+
+    typedEvent = event as Event;
+  } catch {
+    notFound();
+  }
+
+  const past = isPastEvent(typedEvent!);
 
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
@@ -91,11 +102,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         {/* Hero card */}
         <div className="overflow-hidden rounded-3xl bg-white border border-black/[0.06] shadow-sm">
           {/* Hero image */}
-          {typedEvent.image_url ? (
+          {typedEvent!.image_url ? (
             <div className="relative h-56 w-full sm:h-72 bg-gray-100">
               <Image
-                src={typedEvent.image_url}
-                alt={typedEvent.title}
+                src={typedEvent!.image_url}
+                alt={typedEvent!.title}
                 fill
                 className="object-cover"
                 priority
@@ -104,7 +115,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             </div>
           ) : (
             <div className="flex h-32 items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-5xl">
-              {categoryEmoji[typedEvent.category] ?? "📅"}
+              {categoryEmoji[typedEvent!.category] ?? "📅"}
             </div>
           )}
 
@@ -113,18 +124,18 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
               <Badge variant="category">
-                {categoryLabels[typedEvent.category] ?? typedEvent.category}
+                {categoryLabels[typedEvent!.category] ?? typedEvent!.category}
               </Badge>
-              {typedEvent.is_sponsored && (
+              {typedEvent!.is_sponsored && (
                 <Badge variant="sponsored">★ Sponsorizzato</Badge>
               )}
-              {typedEvent.rsvp_required && <Badge variant="rsvp">RSVP Richiesto</Badge>}
+              {typedEvent!.rsvp_required && <Badge variant="rsvp">RSVP Richiesto</Badge>}
               {past && <Badge>Concluso</Badge>}
             </div>
 
             {/* Title */}
             <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-              {typedEvent.title}
+              {typedEvent!.title}
             </h1>
 
             {/* Date & location */}
@@ -134,48 +145,48 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   Data e ora
                 </dt>
                 <dd className="text-gray-800 font-medium">
-                  {formatDate(typedEvent.starts_at)}
-                  {typedEvent.ends_at && (
+                  {formatDate(typedEvent!.starts_at)}
+                  {typedEvent!.ends_at && (
                     <span className="block text-gray-400 text-[13px] mt-0.5">
-                      fino al {formatDate(typedEvent.ends_at)}
+                      fino al {formatDate(typedEvent!.ends_at)}
                     </span>
                   )}
                 </dd>
               </div>
-              {typedEvent.location && (
+              {typedEvent!.location && (
                 <div className="rounded-xl bg-gray-50 px-4 py-3">
                   <dt className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
                     Luogo
                   </dt>
-                  <dd className="text-gray-800 font-medium">{typedEvent.location}</dd>
+                  <dd className="text-gray-800 font-medium">{typedEvent!.location}</dd>
                 </div>
               )}
             </dl>
 
             {/* CTA */}
-            {typedEvent.external_link && (
+            {typedEvent!.external_link && (
               <a
-                href={typedEvent.external_link}
+                href={typedEvent!.external_link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex w-full items-center justify-center rounded-2xl bg-gray-900 py-3.5
                   text-[15px] font-semibold text-white hover:bg-gray-700 active:scale-[0.98]
                   transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
               >
-                {typedEvent.rsvp_required ? "Prenota il tuo posto →" : "Scopri di più →"}
+                {typedEvent!.rsvp_required ? "Prenota il tuo posto →" : "Scopri di più →"}
               </a>
             )}
           </div>
         </div>
 
         {/* Description card */}
-        {typedEvent.description && (
+        {typedEvent!.description && (
           <div className="rounded-3xl bg-white border border-black/[0.06] shadow-sm p-6">
             <h2 className="text-[13px] font-semibold uppercase tracking-wider text-gray-400 mb-3">
               Descrizione
             </h2>
             <p className="text-[15px] text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {typedEvent.description}
+              {typedEvent!.description}
             </p>
           </div>
         )}

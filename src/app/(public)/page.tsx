@@ -5,16 +5,22 @@ import { Event } from "@/types/event";
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const supabase = await createClient();
+  let typedEvents: Event[] = [];
+  let error: unknown = null;
 
-  const { data: events, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("is_published", true)
-    .order("is_sponsored", { ascending: false })
-    .order("starts_at", { ascending: true });
-
-  const typedEvents = (events ?? []) as Event[];
+  try {
+    const supabase = await createClient();
+    const { data: events, error: fetchError } = await supabase
+      .from("events")
+      .select("*")
+      .eq("is_published", true)
+      .order("is_sponsored", { ascending: false })
+      .order("starts_at", { ascending: true });
+    if (fetchError) error = fetchError;
+    else typedEvents = (events ?? []) as Event[];
+  } catch {
+    error = true;
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f5f7]">

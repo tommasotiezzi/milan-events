@@ -19,16 +19,25 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const { data: events, error } = await supabase
-    .from("events")
-    .select("*")
-    .order("starts_at", { ascending: true });
+  let events: Event[] | null = null;
+  let error: unknown = null;
+
+  try {
+    const supabase = await createClient();
+    const { data, error: fetchError } = await supabase
+      .from("events")
+      .select("*")
+      .order("starts_at", { ascending: true });
+    if (fetchError) error = fetchError;
+    else events = data;
+  } catch (e) {
+    error = e;
+  }
 
   if (error) {
     return (
       <div className="text-red-600">
-        Errore nel caricamento degli eventi: {error.message}
+        Errore nel caricamento degli eventi.
       </div>
     );
   }
