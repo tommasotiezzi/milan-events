@@ -38,9 +38,6 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 space-y-0.5">
         {navItems.map((item) => {
-          const active = item.exact
-            ? pathname === item.href
-            : pathname.startsWith(item.href) && !item.exact;
           const isExactActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link
