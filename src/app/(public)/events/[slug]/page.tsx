@@ -111,6 +111,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 className="object-cover"
                 priority
                 sizes="(max-width: 672px) 100vw, 672px"
+                style={{ objectPosition: typedEvent!.image_position ?? "50% 50%" }}
               />
             </div>
           ) : (
@@ -192,9 +193,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         )}
       </main>
 
-      <footer className="mt-16 border-t border-black/[0.06] bg-white/60 py-6">
-        <div className="mx-auto max-w-2xl px-4 text-center text-[12px] text-gray-400 sm:px-6">
-          Milan Events · Bacheca comunitaria di eventi · Milano
+      <footer className="mt-16 border-t border-black/[0.06] bg-white py-6">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-[12px] text-gray-400">
+            © {new Date().getFullYear()} Milan Events · Milano, Italia
+          </p>
+          <a href="mailto:ciao@milanevents.it" className="text-[12px] text-gray-400 hover:text-gray-600 transition-colors">
+            ciao@milanevents.it
+          </a>
         </div>
       </footer>
     </div>

@@ -18,18 +18,26 @@ const categories: { value: EventCategory | "all"; label: string }[] = [
   { value: "other", label: "Altro" },
 ];
 
+function toDateString(iso: string): string {
+  return iso.slice(0, 10); // "YYYY-MM-DD"
+}
+
 export function EventGrid({ events }: EventGridProps) {
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | "all">("all");
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
-  const filtered =
-    selectedCategory === "all"
-      ? events
-      : events.filter((e) => e.category === selectedCategory);
+  const filtered = events.filter((e) => {
+    if (selectedCategory !== "all" && e.category !== selectedCategory) return false;
+    if (selectedDate && toDateString(e.starts_at) !== selectedDate) return false;
+    return true;
+  });
+
+  const hasFilters = selectedCategory !== "all" || selectedDate !== "";
 
   return (
     <div className="space-y-4">
-      {/* Category pills — Apple SF Symbols style */}
-      <div className="flex flex-wrap gap-2 pb-2">
+      {/* Category pills */}
+      <div className="flex flex-wrap gap-2 pb-1">
         {categories.map((cat) => (
           <button
             key={cat.value}
@@ -47,13 +55,45 @@ export function EventGrid({ events }: EventGridProps) {
         ))}
       </div>
 
+      {/* Date filter */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 sm:flex-none">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[13px]">
+            📅
+          </span>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full sm:w-auto rounded-full border border-gray-200 bg-white pl-8 pr-4 py-1.5
+              text-[13px] text-gray-700 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-1
+              focus:ring-gray-300 transition-colors"
+          />
+        </div>
+        {hasFilters && (
+          <button
+            onClick={() => { setSelectedCategory("all"); setSelectedDate(""); }}
+            className="rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-[12px]
+              font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+          >
+            Azzera filtri
+          </button>
+        )}
+      </div>
+
       {/* Event list */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <span className="text-5xl mb-4">🗓</span>
-          <p className="text-gray-400 text-[15px]">
-            Nessun evento trovato in questa categoria.
-          </p>
+          <p className="text-gray-400 text-[15px]">Nessun evento trovato.</p>
+          {hasFilters && (
+            <button
+              onClick={() => { setSelectedCategory("all"); setSelectedDate(""); }}
+              className="mt-3 text-[13px] text-blue-600 hover:underline"
+            >
+              Rimuovi i filtri
+            </button>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-2">

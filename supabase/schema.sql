@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS events (
   slug text UNIQUE NOT NULL,
   description text,
   image_url text,
+  image_position text DEFAULT '50% 50%',
   external_link text,
   starts_at timestamptz NOT NULL,
   ends_at timestamptz,
@@ -18,6 +19,9 @@ CREATE TABLE IF NOT EXISTS events (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Add image_position to existing tables (run if table already exists)
+ALTER TABLE events ADD COLUMN IF NOT EXISTS image_position text DEFAULT '50% 50%';
 
 -- Auto-update updated_at trigger
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -85,3 +89,29 @@ CREATE POLICY "Public can read images"
   FOR SELECT
   TO public
   USING (bucket_id = 'event-images');
+
+-- ============================================================
+-- Newsletter signups table
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS newsletter_signups (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text UNIQUE NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE newsletter_signups ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can subscribe
+CREATE POLICY "Public can subscribe to newsletter"
+  ON newsletter_signups
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- Only authenticated admins can read signups
+CREATE POLICY "Authenticated can read newsletter signups"
+  ON newsletter_signups
+  FOR SELECT
+  TO authenticated
+  USING (true);

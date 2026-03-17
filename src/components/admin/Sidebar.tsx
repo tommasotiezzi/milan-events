@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 const navItems = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/events/new", label: "Nuovo Evento", exact: false },
+  { href: "/admin/newsletter", label: "Newsletter", exact: false },
 ];
 
 export function Sidebar() {

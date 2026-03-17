@@ -40,6 +40,7 @@ export function EventCard({ event }: EventCardProps) {
             fill
             className="object-cover"
             sizes="72px"
+            style={{ objectPosition: event.image_position ?? "50% 50%" }}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-2xl select-none">
