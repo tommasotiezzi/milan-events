@@ -47,18 +47,15 @@ export default async function HomePage() {
         )}
       </main>
 
-      {/* Newsletter */}
-      <NewsletterSignup />
-
       {/* Footer */}
       <footer className="mt-8 border-t border-black/[0.06] bg-white">
         <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
             {/* Brand */}
             <div className="space-y-2">
               <p className="text-[14px] font-semibold text-gray-900">Milan Events</p>
               <p className="text-[13px] text-gray-500 leading-relaxed">
-                La bacheca comunitaria degli eventi di Milano. Aggiornata ogni giorno.
+                La bacheca degli eventi di Milano. Aggiornata ogni giorno.
               </p>
             </div>
 
@@ -78,10 +75,7 @@ export default async function HomePage() {
               <p className="text-[12px] font-semibold uppercase tracking-wider text-gray-400">Contatti</p>
               <ul className="space-y-1.5 text-[13px] text-gray-600">
                 <li>
-                  <a
-                    href="mailto:ciao@milanevents.it"
-                    className="hover:text-gray-900 transition-colors"
-                  >
+                  <a href="mailto:ciao@milanevents.it" className="hover:text-gray-900 transition-colors">
                     ciao@milanevents.it
                   </a>
                 </li>
@@ -102,6 +96,9 @@ export default async function HomePage() {
                 </li>
               </ul>
             </div>
+
+            {/* Newsletter */}
+            <NewsletterSignup />
           </div>
 
           <div className="mt-8 border-t border-black/[0.04] pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
