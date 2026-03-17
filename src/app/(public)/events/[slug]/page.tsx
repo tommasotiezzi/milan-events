@@ -89,7 +89,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     <div className="min-h-screen bg-[#f5f5f7]">
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-black/[0.06] bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-2xl items-center px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center px-6 py-3 lg:px-12">
           <Link
             href="/"
             className="flex items-center gap-1.5 text-[14px] font-medium text-blue-600 hover:text-blue-800 transition-colors"
@@ -100,7 +100,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 space-y-4">
+      <main className="mx-auto max-w-5xl px-6 py-6 lg:px-12 space-y-4">
         {/* Hero card */}
         <div className="overflow-hidden rounded-3xl bg-white border border-black/[0.06] shadow-sm">
           {/* Hero image */}
@@ -202,7 +202,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       </main>
 
       <footer className="mt-16 border-t border-black/[0.06] bg-white py-6">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="mx-auto max-w-5xl px-6 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-[12px] text-gray-400">
             © {new Date().getFullYear()} Milan Events · Milano, Italia
           </p>

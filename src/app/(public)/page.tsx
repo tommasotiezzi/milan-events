@@ -28,7 +28,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[#f5f5f7]">
       {/* Navigation bar */}
       <header className="sticky top-0 z-40 border-b border-black/[0.06] bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3 lg:px-12">
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold tracking-tight text-gray-900">Milan Events</span>
           </div>
@@ -37,7 +37,7 @@ export default async function HomePage() {
       </header>
 
       {/* Content */}
-      <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-5xl px-6 py-6 lg:px-12">
         {error ? (
           <div className="rounded-2xl bg-red-50 border border-red-100 p-6 text-center text-[14px] text-red-500">
             Errore nel caricamento degli eventi. Riprova più tardi.
