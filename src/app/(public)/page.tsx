@@ -49,8 +49,8 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="mt-8 border-t border-black/[0.06] bg-white">
-        <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
+        <div className="mx-auto max-w-5xl px-6 py-10 lg:px-12">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {/* Brand */}
             <div className="space-y-2">
               <p className="text-[14px] font-semibold text-gray-900">Milan Events</p>
@@ -101,7 +101,7 @@ export default async function HomePage() {
             <NewsletterSignup />
           </div>
 
-          <div className="mt-8 border-t border-black/[0.04] pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="mt-10 border-t border-black/[0.04] pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-[12px] text-gray-400">
               © {new Date().getFullYear()} Milan Events · Milano, Italia
             </p>
