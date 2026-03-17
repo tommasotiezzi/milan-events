@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { LogoMark } from "@/components/icons";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", exact: true },
@@ -26,8 +27,8 @@ export function Sidebar() {
       {/* Logo */}
       <div className="mb-6 px-3">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 text-sm">
-            🗓
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900">
+            <LogoMark className="h-5 w-5" />
           </div>
           <div>
             <p className="text-[13px] font-semibold text-gray-900 leading-none">Milan Events</p>

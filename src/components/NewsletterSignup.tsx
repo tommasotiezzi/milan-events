@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { NewsletterIllustration, CheckIcon } from "@/components/icons";
 
 export function NewsletterSignup() {
   const [email, setEmail] = useState("");
@@ -33,7 +34,7 @@ export function NewsletterSignup() {
   return (
     <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
       <div className="rounded-3xl bg-white border border-black/[0.06] shadow-sm px-6 py-8 text-center">
-        <span className="text-3xl">✉️</span>
+        <NewsletterIllustration className="h-24 w-24 mx-auto" />
         <h2 className="mt-3 text-[18px] font-semibold text-gray-900">
           Aggiornamenti via email
         </h2>
@@ -44,7 +45,7 @@ export function NewsletterSignup() {
 
         {status === "success" ? (
           <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-100 px-5 py-2.5 text-[14px] font-medium text-green-700">
-            <span>✓</span> Sei in lista — ti avviseremo presto!
+            <CheckIcon className="h-4 w-4 text-green-600" /> Sei in lista — ti avviseremo presto!
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">

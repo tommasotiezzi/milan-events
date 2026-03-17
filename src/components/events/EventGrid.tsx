@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Event, EventCategory } from "@/types/event";
 import { EventCard } from "./EventCard";
+import { CalendarIcon, EmptyCalendarIllustration } from "@/components/icons";
 
 interface EventGridProps {
   events: Event[];
@@ -58,9 +59,7 @@ export function EventGrid({ events }: EventGridProps) {
       {/* Date filter */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 sm:flex-none">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[13px]">
-            📅
-          </span>
+          <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
           <input
             type="date"
             value={selectedDate}
@@ -83,8 +82,8 @@ export function EventGrid({ events }: EventGridProps) {
 
       {/* Event list */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <span className="text-5xl mb-4">🗓</span>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <EmptyCalendarIllustration className="h-28 w-28 mb-4" />
           <p className="text-gray-400 text-[15px]">Nessun evento trovato.</p>
           {hasFilters && (
             <button

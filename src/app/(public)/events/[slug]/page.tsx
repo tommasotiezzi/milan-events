@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate, isPastEvent } from "@/lib/utils";
 import { Event } from "@/types/event";
+import { ArrowLeftIcon, CategoryIllustration, StarIcon } from "@/components/icons";
 
 interface EventDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -20,13 +21,13 @@ const categoryLabels: Record<string, string> = {
   other: "Altro",
 };
 
-const categoryEmoji: Record<string, string> = {
-  music: "🎵",
-  food: "🍽",
-  art: "🎨",
-  sport: "⚽",
-  culture: "🏛",
-  other: "📅",
+const categoryColours: Record<string, { bg: string; fg: string }> = {
+  music:   { bg: "bg-violet-50", fg: "text-violet-400" },
+  food:    { bg: "bg-amber-50",  fg: "text-amber-400"  },
+  art:     { bg: "bg-pink-50",   fg: "text-pink-400"   },
+  sport:   { bg: "bg-sky-50",    fg: "text-sky-400"    },
+  culture: { bg: "bg-emerald-50",fg: "text-emerald-400"},
+  other:   { bg: "bg-gray-100",  fg: "text-gray-400"   },
 };
 
 export async function generateMetadata({
@@ -93,7 +94,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             href="/"
             className="flex items-center gap-1.5 text-[14px] font-medium text-blue-600 hover:text-blue-800 transition-colors"
           >
-            ← Tutti gli eventi
+            <ArrowLeftIcon className="h-4 w-4" />
+            Tutti gli eventi
           </Link>
         </div>
       </header>
@@ -114,11 +116,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 style={{ objectPosition: typedEvent!.image_position ?? "50% 50%" }}
               />
             </div>
-          ) : (
-            <div className="flex h-32 items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-5xl">
-              {categoryEmoji[typedEvent!.category] ?? "📅"}
-            </div>
-          )}
+          ) : (() => {
+              const col = categoryColours[typedEvent!.category] ?? categoryColours.other;
+              return (
+                <div className={`flex h-32 items-center justify-center ${col.bg}`}>
+                  <CategoryIllustration category={typedEvent!.category} className={`h-14 w-14 ${col.fg}`} />
+                </div>
+              );
+            })()}
 
           {/* Detail */}
           <div className="p-6 space-y-4">
@@ -128,7 +133,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 {categoryLabels[typedEvent!.category] ?? typedEvent!.category}
               </Badge>
               {typedEvent!.is_sponsored && (
-                <Badge variant="sponsored">★ Sponsorizzato</Badge>
+                <Badge variant="sponsored" className="inline-flex items-center gap-1">
+                  <StarIcon filled className="h-3 w-3" />
+                  Sponsorizzato
+                </Badge>
               )}
               {typedEvent!.rsvp_required && <Badge variant="rsvp">RSVP Richiesto</Badge>}
               {past && <Badge>Concluso</Badge>}

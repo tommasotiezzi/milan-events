@@ -3,6 +3,11 @@ import Link from "next/link";
 import { Event } from "@/types/event";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate, isPastEvent } from "@/lib/utils";
+import {
+  CategoryIllustration,
+  LocationPinIcon,
+  StarIcon,
+} from "@/components/icons";
 
 interface EventCardProps {
   event: Event;
@@ -17,8 +22,19 @@ const categoryLabels: Record<string, string> = {
   other: "Altro",
 };
 
+// Soft colour palette per category (bg + icon colour)
+const categoryColours: Record<string, { bg: string; fg: string }> = {
+  music:   { bg: "bg-violet-50", fg: "text-violet-400" },
+  food:    { bg: "bg-amber-50",  fg: "text-amber-400"  },
+  art:     { bg: "bg-pink-50",   fg: "text-pink-400"   },
+  sport:   { bg: "bg-sky-50",    fg: "text-sky-400"    },
+  culture: { bg: "bg-emerald-50",fg: "text-emerald-400"},
+  other:   { bg: "bg-gray-100",  fg: "text-gray-400"   },
+};
+
 export function EventCard({ event }: EventCardProps) {
   const past = isPastEvent(event);
+  const colours = categoryColours[event.category] ?? categoryColours.other;
 
   return (
     <article
@@ -27,10 +43,10 @@ export function EventCard({ event }: EventCardProps) {
         transition-all duration-200 ease-out
         ${past ? "opacity-50" : ""}`}
     >
-      {/* Thumbnail — square, rounded corners, left */}
+      {/* Thumbnail */}
       <Link
         href={`/events/${event.slug}`}
-        className="shrink-0 relative h-[72px] w-[72px] overflow-hidden rounded-[14px] bg-gray-100"
+        className={`shrink-0 relative h-[72px] w-[72px] overflow-hidden rounded-[14px] ${colours.bg}`}
         tabIndex={-1}
       >
         {event.image_url ? (
@@ -43,8 +59,8 @@ export function EventCard({ event }: EventCardProps) {
             style={{ objectPosition: event.image_position ?? "50% 50%" }}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-2xl select-none">
-            {categoryEmoji[event.category] ?? "📅"}
+          <div className="flex h-full w-full items-center justify-center">
+            <CategoryIllustration category={event.category} className={`h-8 w-8 ${colours.fg}`} />
           </div>
         )}
         {event.is_sponsored && (
@@ -54,7 +70,7 @@ export function EventCard({ event }: EventCardProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0 gap-1">
-        {/* Top row: title + badges */}
+        {/* Top row */}
         <div className="flex items-start justify-between gap-3">
           <Link href={`/events/${event.slug}`} className="flex-1 min-w-0">
             <h2 className="text-[15px] font-semibold text-gray-900 leading-snug truncate group-hover:text-blue-600 transition-colors">
@@ -62,7 +78,6 @@ export function EventCard({ event }: EventCardProps) {
             </h2>
           </Link>
 
-          {/* RSVP / external link button */}
           {event.external_link ? (
             <a
               href={event.external_link}
@@ -94,21 +109,24 @@ export function EventCard({ event }: EventCardProps) {
           </p>
         )}
 
-        {/* Bottom row: location + date */}
+        {/* Bottom row */}
         <div className="flex items-end justify-between mt-1 gap-2">
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge variant="category" className="text-[11px]">
               {categoryLabels[event.category] ?? event.category}
             </Badge>
             {event.is_sponsored && (
-              <Badge variant="sponsored" className="text-[11px]">★ Sponsorizzato</Badge>
+              <Badge variant="sponsored" className="inline-flex items-center gap-1 text-[11px]">
+                <StarIcon filled className="h-2.5 w-2.5" />
+                Sponsorizzato
+              </Badge>
             )}
             {event.rsvp_required && (
               <Badge variant="rsvp" className="text-[11px]">RSVP</Badge>
             )}
             {event.location && (
-              <span className="text-[12px] text-gray-400 flex items-center gap-0.5">
-                <span className="text-[10px]">📍</span>
+              <span className="flex items-center gap-0.5 text-[12px] text-gray-400">
+                <LocationPinIcon className="h-3 w-3 shrink-0" />
                 <span className="truncate max-w-[140px]">{event.location}</span>
               </span>
             )}
@@ -124,12 +142,3 @@ export function EventCard({ event }: EventCardProps) {
     </article>
   );
 }
-
-const categoryEmoji: Record<string, string> = {
-  music: "🎵",
-  food: "🍽",
-  art: "🎨",
-  sport: "⚽",
-  culture: "🏛",
-  other: "📅",
-};
