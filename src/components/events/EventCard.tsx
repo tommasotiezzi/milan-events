@@ -59,7 +59,7 @@ export function EventCard({ event }: EventCardProps) {
 
   return (
     <article
-      className={`group flex items-start gap-4 rounded-2xl bg-white px-5 py-4
+      className={`group flex items-center gap-4 rounded-2xl bg-white px-5 py-4
         border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200
         transition-all duration-200 ease-out ${past ? "opacity-50" : ""}`}
     >
