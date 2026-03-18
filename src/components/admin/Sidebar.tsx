@@ -11,7 +11,7 @@ const navItems = [
   { href: "/admin/newsletter", label: "Newsletter", exact: false },
 ];
 
-export function Sidebar() {
+export function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -25,7 +25,7 @@ export function Sidebar() {
   return (
     <aside className="flex h-full w-56 flex-col border-r border-black/[0.06] bg-white px-3 py-5">
       {/* Logo */}
-      <div className="mb-6 px-3">
+      <div className="mb-6 flex items-center justify-between px-3">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900">
             <LogoMark className="h-5 w-5" />
@@ -35,6 +35,17 @@ export function Sidebar() {
             <p className="text-[11px] text-gray-400 mt-0.5">Admin</p>
           </div>
         </Link>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 md:hidden"
+            aria-label="Chiudi menu"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -45,6 +56,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={`flex items-center rounded-xl px-3 py-2 text-[13px] font-medium transition-colors
                 ${
                   isExactActive

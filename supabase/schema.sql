@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS events (
 -- Add image_position to existing tables (run if table already exists)
 ALTER TABLE events ADD COLUMN IF NOT EXISTS image_position text DEFAULT '50% 50%';
 
+-- Add external_link to existing tables (run if table already exists without this column)
+ALTER TABLE events ADD COLUMN IF NOT EXISTS external_link text;
+
 -- Auto-update updated_at trigger
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
