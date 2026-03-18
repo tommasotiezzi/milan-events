@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Event, EventCategory } from "@/types/event";
 import { Button } from "@/components/ui/Button";
@@ -24,10 +24,88 @@ const categoryOptions: { value: EventCategory; label: string }[] = [
 
 function toLocalDatetimeValue(iso: string | null | undefined): string {
   if (!iso) return "";
-  // Convert ISO string to local datetime-local input value
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function FocalPointPicker({
+  imageUrl,
+  position,
+  onChange,
+}: {
+  imageUrl: string;
+  position: string;
+  onChange: (pos: string) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+
+  const [x, y] = position.split(" ").map((p) => parseFloat(p));
+
+  const updatePosition = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const clientX =
+        "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+      const clientY =
+        "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+      const newX = Math.max(0, Math.min(100, Math.round(((clientX - rect.left) / rect.width) * 100)));
+      const newY = Math.max(0, Math.min(100, Math.round(((clientY - rect.top) / rect.height) * 100)));
+      onChange(`${newX}% ${newY}%`);
+    },
+    [onChange]
+  );
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs text-gray-500">
+        Clicca o trascina sull&apos;immagine per impostare il punto focale (come verrà ritagliata)
+      </p>
+      <div
+        ref={containerRef}
+        className="relative h-48 w-full overflow-hidden rounded-xl bg-gray-100 cursor-crosshair select-none"
+        onMouseDown={(e) => { isDragging.current = true; updatePosition(e); }}
+        onMouseMove={(e) => { if (isDragging.current) updatePosition(e); }}
+        onMouseUp={() => { isDragging.current = false; }}
+        onMouseLeave={() => { isDragging.current = false; }}
+        onTouchStart={(e) => { isDragging.current = true; updatePosition(e); }}
+        onTouchMove={(e) => { if (isDragging.current) updatePosition(e); }}
+        onTouchEnd={() => { isDragging.current = false; }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt="Focal point preview"
+          className="h-full w-full object-cover pointer-events-none"
+          style={{ objectPosition: position }}
+          draggable={false}
+        />
+        {/* Focal point indicator */}
+        <div
+          className="absolute pointer-events-none"
+          style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
+        >
+          <div className="relative">
+            {/* outer ring */}
+            <div className="h-8 w-8 rounded-full border-2 border-white shadow-lg bg-white/20" />
+            {/* inner dot */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-2 w-2 rounded-full bg-white shadow" />
+            </div>
+            {/* crosshair lines */}
+            <div className="absolute top-1/2 left-0 right-0 h-px bg-white/80 -translate-y-px" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/80 -translate-x-px" />
+          </div>
+        </div>
+        {/* instruction overlay (fades out) */}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/40 to-transparent py-2 px-3 pointer-events-none">
+          <p className="text-[11px] text-white/80">Punto focale: {x}%, {y}%</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function EventForm({ event, mode }: EventFormProps) {
@@ -53,16 +131,14 @@ export function EventForm({ event, mode }: EventFormProps) {
     rsvp_required: event?.rsvp_required ?? false,
     is_published: event?.is_published ?? false,
     image_url: event?.image_url ?? "",
+    image_position: event?.image_position ?? "50% 50%",
   });
 
   function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
     const target = e.target as HTMLInputElement;
-    const value =
-      target.type === "checkbox" ? target.checked : target.value;
+    const value = target.type === "checkbox" ? target.checked : target.value;
     setForm((prev) => ({ ...prev, [target.name]: value }));
   }
 
@@ -87,7 +163,6 @@ export function EventForm({ event, mode }: EventFormProps) {
   }
 
   async function handleDeleteOldImage(url: string) {
-    // Extract path from public URL
     const parts = url.split("/event-images/");
     if (parts.length < 2) return;
     const path = parts[1];
@@ -102,11 +177,9 @@ export function EventForm({ event, mode }: EventFormProps) {
     try {
       let imageUrl = form.image_url;
 
-      // Handle image upload
       const fileInput = fileInputRef.current;
       if (fileInput?.files?.[0]) {
         const file = fileInput.files[0];
-        // Delete old image if editing and has one
         if (mode === "edit" && event?.image_url) {
           await handleDeleteOldImage(event.image_url);
         }
@@ -116,10 +189,23 @@ export function EventForm({ event, mode }: EventFormProps) {
         }
       }
 
+      const sharedFields = {
+        title: form.title,
+        description: form.description || null,
+        image_url: imageUrl || null,
+        image_position: imageUrl ? form.image_position : null,
+        external_link: form.external_link || null,
+        starts_at: new Date(form.starts_at).toISOString(),
+        ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+        location: form.location || null,
+        category: form.category,
+        is_sponsored: form.is_sponsored,
+        rsvp_required: form.rsvp_required,
+        is_published: form.is_published,
+      };
+
       if (mode === "create") {
-        // Generate slug
         const baseSlug = generateSlug(form.title);
-        // Check if slug exists
         const { data: existing } = await supabase
           .from("events")
           .select("id")
@@ -129,54 +215,20 @@ export function EventForm({ event, mode }: EventFormProps) {
         const slug = existing ? generateUniqueSlug(form.title) : baseSlug;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: insertError } = await (supabase.from("events") as any).insert({
-          title: form.title,
-          slug,
-          description: form.description || null,
-          image_url: imageUrl || null,
-          external_link: form.external_link || null,
-          starts_at: new Date(form.starts_at).toISOString(),
-          ends_at: form.ends_at
-            ? new Date(form.ends_at).toISOString()
-            : null,
-          location: form.location || null,
-          category: form.category,
-          is_sponsored: form.is_sponsored,
-          rsvp_required: form.rsvp_required,
-          is_published: form.is_published,
-        });
-
+        const { error: insertError } = await (supabase.from("events") as any).insert({ slug, ...sharedFields });
         if (insertError) throw insertError;
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: updateError } = await (supabase.from("events") as any)
-          .update({
-            title: form.title,
-            description: form.description || null,
-            image_url: imageUrl || null,
-            external_link: form.external_link || null,
-            starts_at: new Date(form.starts_at).toISOString(),
-            ends_at: form.ends_at
-              ? new Date(form.ends_at).toISOString()
-              : null,
-            location: form.location || null,
-            category: form.category,
-            is_sponsored: form.is_sponsored,
-            rsvp_required: form.rsvp_required,
-            is_published: form.is_published,
-            updated_at: new Date().toISOString(),
-          })
+          .update({ ...sharedFields, updated_at: new Date().toISOString() })
           .eq("id", event!.id);
-
         if (updateError) throw updateError;
       }
 
       router.push("/admin");
       router.refresh();
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Si è verificato un errore."
-      );
+      setError(err instanceof Error ? err.message : "Si è verificato un errore.");
     } finally {
       setLoading(false);
     }
@@ -190,7 +242,6 @@ export function EventForm({ event, mode }: EventFormProps) {
         </div>
       )}
 
-      {/* Title */}
       <Input
         id="title"
         name="title"
@@ -201,7 +252,6 @@ export function EventForm({ event, mode }: EventFormProps) {
         placeholder="Nome dell'evento"
       />
 
-      {/* Description */}
       <Textarea
         id="description"
         name="description"
@@ -209,24 +259,12 @@ export function EventForm({ event, mode }: EventFormProps) {
         value={form.description}
         onChange={handleChange}
         rows={5}
-        placeholder="Descrizione dell'evento (supporta Markdown)"
+        placeholder="Descrizione dell'evento"
       />
 
-      {/* Image Upload */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Immagine
-        </label>
-        {imagePreview && (
-          <div className="relative h-40 w-full rounded-md overflow-hidden bg-gray-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        )}
+      {/* Image Upload + Focal Point */}
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-gray-700">Immagine</label>
         <input
           ref={fileInputRef}
           type="file"
@@ -234,16 +272,24 @@ export function EventForm({ event, mode }: EventFormProps) {
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              setImagePreview(URL.createObjectURL(file));
+              const url = URL.createObjectURL(file);
+              setImagePreview(url);
+              setForm((prev) => ({ ...prev, image_position: "50% 50%" }));
             }
           }}
           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
             file:rounded-md file:border-0 file:text-sm file:font-medium
             file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
         />
+        {imagePreview && (
+          <FocalPointPicker
+            imageUrl={imagePreview}
+            position={form.image_position}
+            onChange={(pos) => setForm((prev) => ({ ...prev, image_position: pos }))}
+          />
+        )}
       </div>
 
-      {/* External Link */}
       <Input
         id="external_link"
         name="external_link"
@@ -254,7 +300,6 @@ export function EventForm({ event, mode }: EventFormProps) {
         placeholder="https://..."
       />
 
-      {/* Dates */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
           id="starts_at"
@@ -275,7 +320,6 @@ export function EventForm({ event, mode }: EventFormProps) {
         />
       </div>
 
-      {/* Location */}
       <Input
         id="location"
         name="location"
@@ -285,12 +329,8 @@ export function EventForm({ event, mode }: EventFormProps) {
         placeholder="Nome del locale o indirizzo"
       />
 
-      {/* Category */}
       <div className="space-y-1">
-        <label
-          htmlFor="category"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">
           Categoria
         </label>
         <select
@@ -309,25 +349,12 @@ export function EventForm({ event, mode }: EventFormProps) {
         </select>
       </div>
 
-      {/* Toggles */}
       <div className="space-y-3">
         {(
           [
-            {
-              name: "is_sponsored",
-              label: "Sponsorizzato",
-              description: "Fissa l'evento in cima alla bacheca",
-            },
-            {
-              name: "rsvp_required",
-              label: "RSVP Richiesto",
-              description: "Indica che è richiesta la prenotazione",
-            },
-            {
-              name: "is_published",
-              label: "Pubblicato",
-              description: "Rende l'evento visibile al pubblico",
-            },
+            { name: "is_sponsored", label: "Sponsorizzato", description: "Fissa l'evento in cima alla bacheca" },
+            { name: "rsvp_required", label: "RSVP Richiesto", description: "Indica che è richiesta la prenotazione" },
+            { name: "is_published", label: "Pubblicato", description: "Rende l'evento visibile al pubblico" },
           ] as const
         ).map(({ name, label, description }) => (
           <label key={name} className="flex items-start gap-3 cursor-pointer">
@@ -346,20 +373,11 @@ export function EventForm({ event, mode }: EventFormProps) {
         ))}
       </div>
 
-      {/* Submit */}
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" disabled={loading}>
-          {loading
-            ? "Salvataggio..."
-            : mode === "create"
-              ? "Crea evento"
-              : "Salva modifiche"}
+          {loading ? "Salvataggio..." : mode === "create" ? "Crea evento" : "Salva modifiche"}
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => router.push("/admin")}
-        >
+        <Button type="button" variant="secondary" onClick={() => router.push("/admin")}>
           Annulla
         </Button>
       </div>

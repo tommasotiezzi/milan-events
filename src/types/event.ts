@@ -12,6 +12,7 @@ export interface Event {
   slug: string;
   description: string | null;
   image_url: string | null;
+  image_position: string | null;
   external_link: string | null;
   starts_at: string;
   ends_at: string | null;

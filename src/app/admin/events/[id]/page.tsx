@@ -8,15 +8,18 @@ interface EditEventPageProps {
 
 export default async function EditEventPage({ params }: EditEventPageProps) {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const { data: event, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error || !event) {
+  let event;
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error || !data) notFound();
+    event = data;
+  } catch {
     notFound();
   }
 
